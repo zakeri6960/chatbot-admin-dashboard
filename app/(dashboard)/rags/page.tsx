@@ -18,7 +18,6 @@ import {
 import { ChevronDownIcon } from '@heroicons/react/16/solid';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
-// داده‌های نمونه
 const rags = [
   {
     id: 1,
@@ -52,8 +51,7 @@ const categories = [
   { id: 3, title: 'Vico' }
 ];
 
-// دکمه منوی اکشن برای موبایل
-export function ToggleButton() {
+export function ToggleButton({ ragData, handleEdit, handleDelete }: any): any {
   return (
     <Menu
       as="div"
@@ -61,7 +59,7 @@ export function ToggleButton() {
     >
       <div>
         <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
-          {/* آیکون منو */}
+          ...
         </MenuButton>
       </div>
       <MenuItems
@@ -70,22 +68,26 @@ export function ToggleButton() {
       >
         <div className="py-1">
           <MenuItem>
-            <a
-              href="#"
+            <button
+              onClick={(e) => {
+                handleEdit(ragData);
+              }}
               className="text-blue-700 block px-4 py-2 text-sm data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
             >
               Edit
-            </a>
+            </button>
           </MenuItem>
         </div>
         <div className="py-1">
           <MenuItem>
-            <a
-              href="#"
+            <button
+              onClick={(e) => {
+                handleDelete(ragData.id);
+              }}
               className="text-red-700 block px-4 py-2 text-sm data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
             >
               Delete
-            </a>
+            </button>
           </MenuItem>
         </div>
       </MenuItems>
@@ -93,22 +95,24 @@ export function ToggleButton() {
   );
 }
 
-// RagForm Component
-export function RagForm({ setOpenDialog, initialValues, onSubmit }) {
+export function RagForm({ setOpenDialog, initialValues, onSubmit }: any) {
   const [form, setForm] = useState(
     initialValues || {
+      id: 0,
       title: '',
-      about: '',
-      country: 'United States'
+      rag: '',
+      category_id: 0
     }
   );
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prevForm) => ({ ...prevForm, [name]: value }));
+  const handleChange = (e: any) => {
+    const name = e.target.name;
+    const value =
+      name === 'category_id' ? Number(e.target.value) : e.target.value;
+    setForm((prevForm: any) => ({ ...prevForm, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     onSubmit(form);
     setOpenDialog(false);
@@ -123,7 +127,6 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit }) {
             share.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-            {/* Title */}
             <div className="col-span-full">
               <label
                 htmlFor="title"
@@ -142,20 +145,20 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit }) {
                 />
               </div>
             </div>
-            {/* About */}
+
             <div className="col-span-full">
               <label
-                htmlFor="about"
+                htmlFor="rag"
                 className="block text-sm/6 font-medium text-gray-900"
               >
-                About
+                Text
               </label>
               <div className="mt-2">
                 <textarea
-                  id="about"
-                  name="about"
+                  id="rag"
+                  name="rag"
                   rows={3}
-                  value={form.about}
+                  value={form.rag}
                   onChange={handleChange}
                   className="block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm/6"
                 />
@@ -164,33 +167,36 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit }) {
                 Write a few sentences about yourself.
               </p>
             </div>
-            {/* Country */}
+
             <div className="col-span-full">
               <label
-                htmlFor="country"
+                htmlFor="category_id"
                 className="block text-sm/6 font-medium text-gray-900"
               >
-                Country
+                Category
               </label>
               <div className="mt-2 grid grid-cols-1">
                 <select
-                  id="country"
-                  name="country"
-                  value={form.country}
+                  id="category_id"
+                  name="category_id"
+                  value={form.category_id}
                   onChange={handleChange}
                   className="col-start-1 row-start-1 w-full appearance-none rounded-md border border-gray-300 bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm/6"
                 >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
+                  <option value={0}>Choose Category</option>
+                  {categories.map((category) => (
+                    <option value={category.id} key={category.id}>
+                      {category.title}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDownIcon
                   aria-hidden="true"
                   className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
                 />
               </div>
-              {/* Buttons */}
-              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+
+              <div className="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 mt-8">
                 <button
                   type="submit"
                   className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 sm:ml-3 sm:w-auto"
@@ -213,24 +219,29 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit }) {
   );
 }
 
-// Rags Component
 export default function Rags() {
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedRag, setSelectedRag] = useState(null); // State to hold selected rag for editing
-  const [ragsData, setRagsData] = useState(rags); // Use useState to manage rags
+  const [selectedRag, setSelectedRag] = useState(null);
+  const [ragsData, setRagsData] = useState(rags);
 
   const handleCreate = (newRag) => {
     const newId =
       ragsData.length > 0 ? Math.max(...ragsData.map((r) => r.id)) + 1 : 1;
-    const createdRag = { ...newRag, id: newId, category_id: 1 }; // You might need to adjust category_id
+    const createdRag = {
+      ...newRag,
+      id: newId,
+      category_id: Number(newRag.category_id)
+    };
     setRagsData([...ragsData, createdRag]);
+    setOpenDialog(false);
   };
 
   const handleUpdate = (updatedRag) => {
     setRagsData(
       ragsData.map((rag) => (rag.id === updatedRag.id ? updatedRag : rag))
     );
-    setSelectedRag(null); // Clear selected rag after update
+    setSelectedRag(null);
+    setOpenDialog(false);
   };
 
   const handleDelete = (id) => {
@@ -244,163 +255,147 @@ export default function Rags() {
 
   return (
     <>
-      <Tabs defaultValue="all">
-        <div className="flex items-center">
-          <TabsList>
-            <TabsTrigger value="all" key="all">
+      <Tabs
+        className="bg-inherit w-[100%] md:w-[90%] lg:w-[80%] mx-auto mt-8 px-4"
+        defaultValue="all"
+      >
+        <h2 className="text-2xl font-bold text-gray-800 pb-5">Rags</h2>
+        <div className="flex items-center mb-6 gap-4">
+          <TabsList className="flex gap-3 bg-gray-100 rounded-lg p-1 shadow-sm flex-wrap">
+            <TabsTrigger
+              value="all"
+              className="px-5 py-2 rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white transition font-semibold"
+            >
               All
             </TabsTrigger>
             {categories.map((category) => (
               <TabsTrigger
-                value={category.title.toLowerCase()}
                 key={category.id}
+                value={category.title.toLowerCase()}
+                className="px-5 py-2 rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white transition font-semibold"
               >
                 {category.title}
               </TabsTrigger>
             ))}
           </TabsList>
-          <div className="ml-auto flex items-center gap-1">
-            <Button
-              onClick={() => {
-                setSelectedRag(null);
-                setOpenDialog(true);
-              }}
-              size="sm"
-              className="h-8 gap-1"
-            >
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Add Rag
-              </span>
-            </Button>
-          </div>
+
+          <Button
+            onClick={() => {
+              setSelectedRag(null);
+              setOpenDialog(true);
+            }}
+            size="sm"
+            className="ml-auto flex items-center gap-2 h-9 bg-green-600 hover:bg-green-700 transition text-white rounded-lg shadow-md"
+            aria-label="Add Rag"
+          >
+            <PlusCircle className="h-5 w-5" />
+            <span className="hidden sm:inline">Add Rag</span>
+          </Button>
         </div>
 
-        <TabsContent value="all">
-          <div className="w-full h-full p-4">
-            <div className="flex justify-between w-full border-b border-gray-300 pb-2 mb-2 font-semibold">
-              <p className="w-1/5">Title</p>
-              <p className="w-4/5">Text</p>
-              <div className="w-1/5 text-right">Actions</div>
-            </div>
-            {ragsData.map(({ id, title, rag }) => (
-              <div
-                key={id}
-                className="flex justify-between w-full items-center py-2 border-b border-gray-200"
+        {ragsData.length > 0 ? (
+          <>
+            <TabsContent value="all" className="p-10 bg-white rounded-lg shadow">
+              <RagsTable
+                rags={ragsData}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </TabsContent>
+
+            {categories.map((category) => (
+              <TabsContent
+                key={category.id}
+                value={category.title.toLowerCase()}
+                className="p-4 bg-white rounded-lg shadow"
               >
-                <p className="w-1/5 truncate">{title}</p>
-                <p className="w-4/5 truncate">{rag}</p>
-                <div className="w-1/5 flex justify-end gap-2 items-center">
-                  <button
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition hidden md:block lg:block"
-                    onClick={() =>
-                      handleEdit({
-                        id,
-                        title,
-                        about: rag,
-                        country: 'United States'
-                      })
-                    } // Corrected to pass the rag object
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition hidden md:block lg:block"
-                    onClick={() => handleDelete(id)}
-                  >
-                    Delete
-                  </button>
-                  <ToggleButton />
-                </div>
-              </div>
+                <RagsTable
+                  rags={ragsData.filter(
+                    (rag) => rag.category_id === category.id
+                  )}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              </TabsContent>
             ))}
-          </div>
-        </TabsContent>
-
-        {categories.map((category) => (
-          <TabsContent key={category.id} value={category.title.toLowerCase()}>
-            <div className="w-full h-full p-4">
-              <div className="flex justify-between w-full border-b border-gray-300 pb-2 mb-2 font-semibold">
-                <p className="w-1/5">Title</p>
-                <p className="w-4/5">Text</p>
-                <div className="w-1/5 text-right">Actions</div>
-              </div>
-
-              {ragsData
-                .filter((rag) => rag.category_id === category.id)
-                .map((rag) => (
-                  <div
-                    key={rag.id}
-                    className="flex justify-between w-full items-center py-2 border-b border-gray-200"
-                  >
-                    <p className="w-1/5 truncate">{rag.title}</p>
-                    <p className="w-4/5 truncate">{rag.rag}</p>
-                    <div className="w-1/5 flex justify-end gap-2 items-center ">
-                      <button
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition hidden md:block lg:block"
-                        onClick={() =>
-                          handleEdit({
-                            id,
-                            title,
-                            about: rag.rag,
-                            country: 'United States'
-                          })
-                        }
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition hidden md:block lg:block"
-                        onClick={() => handleDelete(rag.id)}
-                      >
-                        Delete
-                      </button>
-                      <ToggleButton />
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </TabsContent>
-        ))}
+          </>
+        ) : (
+          <p className="text-center mt-40 text-gray-400 text-lg font-medium">
+            There is no rag
+          </p>
+        )}
       </Tabs>
 
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        className="relative z-20"
+        className="relative z-50"
       >
         <DialogBackdrop
           transition
-          className="fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         />
-
-        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <DialogPanel
-              transition
-              className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
-            >
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="">
-                  <div className="mt-3 sm:mt-0 sm:ml-4 sm:text-left">
-                    <DialogTitle
-                      as="h3"
-                      className="text-base font-semibold text-gray-900"
-                    >
-                      {selectedRag ? 'Edit Rag' : 'Add Rag'}
-                    </DialogTitle>
-                    <RagForm
-                      setOpenDialog={setOpenDialog}
-                      initialValues={selectedRag}
-                      onSubmit={selectedRag ? handleUpdate : handleCreate}
-                    />
-                  </div>
-                </div>
-              </div>
-            </DialogPanel>
-          </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <DialogPanel
+            transition
+            className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg"
+          >
+            <DialogTitle className="text-xl font-semibold text-gray-900 mb-4">
+              {selectedRag ? 'Edit Rag' : 'Add Rag'}
+            </DialogTitle>
+            <RagForm
+              setOpenDialog={setOpenDialog}
+              initialValues={selectedRag}
+              onSubmit={selectedRag ? handleUpdate : handleCreate}
+            />
+          </DialogPanel>
         </div>
       </Dialog>
     </>
+  );
+}
+
+function RagsTable({ rags, onEdit, onDelete }) {
+  return (
+    <div className="w-full overflow-x-auto">
+      <div className="flex justify-between border-b border-gray-300 pb-3 mb-4 font-semibold text-gray-700">
+        <p className="w-1/5 truncate">Title</p>
+        <p className="w-4/5 truncate">Text</p>
+        <div className="w-1/5 text-right">Actions</div>
+      </div>
+
+      {rags.map((rag) => (
+        <div
+          key={rag.id}
+          className="flex justify-between items-center py-3 border-b border-gray-200 hover:bg-blue-50 transition rounded-md"
+        >
+          <p className="w-1/5 truncate font-medium text-gray-800">
+            {rag.title}
+          </p>
+          <p className="w-4/5 truncate text-gray-600">{rag.rag}</p>
+          <div className="w-1/5 flex justify-end gap-3 items-center">
+            <button
+              onClick={() => onEdit(rag)}
+              className="hidden md:inline-block px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow"
+              aria-label={`Edit ${rag.title}`}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(rag.id)}
+              className="hidden md:inline-block px-4 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition shadow"
+              aria-label={`Delete ${rag.title}`}
+            >
+              Delete
+            </button>
+            <ToggleButton
+              ragData={rag}
+              handleEdit={onEdit}
+              handleDelete={onDelete}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

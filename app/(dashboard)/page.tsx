@@ -1,54 +1,99 @@
+"use client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { File, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ProductsTable } from './products-table';
-// import { getProducts } from '@/lib/db';
+import clsx from 'clsx';
+import { useState } from 'react';
 
-export default async function ProductsPage(
-  props: {
-    searchParams: Promise<{ q: string; offset: string }>;
+let initialModels = [
+  {
+    id: 1,
+    model: "llama3.2:1b",
+    engine: "Ollama",
+    active: true
+  },
+  {
+    id: 2,
+    model: "gemma2:2b",
+    engine: "Ollama",
+    active: false
+  },
+  {
+    id: 3,
+    model: "deepseek:3b",
+    engine: "Ollama",
+    active: false
   }
-) {
-  const searchParams = await props.searchParams;
-  const search = searchParams.q ?? '';
-  const offset = searchParams.offset ?? 0;
-  // const { products, newOffset, totalProducts } = await getProducts(
-  //   search,
-  //   Number(offset)
-  // );
+]
+
+export default function ProductsPage() {
+
+  const [models, setModels] = useState(initialModels);
+  const [activeModel, setActiveModel] = useState(initialModels.find(m=> m.active)?.id || null);
+
+  
+  const handleChangeModel = (modelId)=>{
+    const updatedModels = models.map((m) => ({
+      ...m,
+      active: m.id === modelId,
+    }));
+
+    setModels(updatedModels);
+    setActiveModel(modelId);
+  }
 
   return (
-    <Tabs defaultValue="all">
-      <div className="flex items-center">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="draft">Draft</TabsTrigger>
-          <TabsTrigger value="archived" className="hidden sm:flex">
-            Archived
-          </TabsTrigger>
-        </TabsList>
-        <div className="ml-auto flex items-center gap-2">
-          <Button size="sm" variant="outline" className="h-8 gap-1">
-            <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
-            </span>
-          </Button>
-          <Button size="sm" className="h-8 gap-1">
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add Product
-            </span>
-          </Button>
-        </div>
+    <Tabs defaultValue="all" className="w-full max-w-5xl mx-auto mt-8">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Models</h2>
+        <Button
+          size="sm"
+          className="h-9 gap-2 bg-green-600 hover:bg-green-700 transition text-white rounded-lg shadow-md"
+        >
+          <PlusCircle className="h-4 w-4" />
+          <span className="hidden sm:inline">Add Model</span>
+        </Button>
       </div>
+      
       <TabsContent value="all">
-        {/* <ProductsTable
-          products={products}
-          offset={newOffset ?? 0}
-          totalProducts={totalProducts}
-        /> */}
+        <div className="overflow-x-auto rounded-xl shadow-lg bg-white">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Model</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Engine</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">On/Off</th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {models.map((model) => (
+                <tr
+                  key={model.id}
+                  onClick={()=> handleChangeModel(model.id)}
+                  className="hover:bg-blue-50 transition"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">{model.model}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{model.engine}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={clsx("inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold", model.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
+                      {model.active ? "On" : "Off"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input type="radio" checked={model.active} name="model" onChange={()=> handleChangeModel(model.id)} className="accent-blue-600" />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <button className="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </TabsContent>
     </Tabs>
   );
