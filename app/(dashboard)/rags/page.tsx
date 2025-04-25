@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -17,39 +17,8 @@ import {
 } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/16/solid';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { createRagAction } from '../actions';
 
-const rags = [
-  {
-    id: 1,
-    title: 'ddsdsd',
-    category_id: 2,
-    rag: 'dfdgrgfgbtyyhtygiuonhinjifnvfoinvfivnf'
-  },
-  {
-    id: 2,
-    title: 'ddsdsd',
-    category_id: 1,
-    rag: 'dfdgrgfgbtyyhtygiuonhinjifnvfoinvfivnf'
-  },
-  {
-    id: 3,
-    title: 'ddsdsd',
-    category_id: 2,
-    rag: 'dfdgrgfgbtyyhtygiuonhinjifnvfoinvfivnf'
-  },
-  {
-    id: 4,
-    title: 'ddsdsd',
-    category_id: 3,
-    rag: 'dfdgrgfgbtyyhtygiuonhinjifnvfoinvfivnf'
-  }
-];
-
-const categories = [
-  { id: 1, title: 'Supplement' },
-  { id: 2, title: 'Food' },
-  { id: 3, title: 'Vico' }
-];
 
 export function ToggleButton({ ragData, handleEdit, handleDelete }: any): any {
   return (
@@ -95,7 +64,7 @@ export function ToggleButton({ ragData, handleEdit, handleDelete }: any): any {
   );
 }
 
-export function RagForm({ setOpenDialog, initialValues, onSubmit }: any) {
+export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: any) {
   const [form, setForm] = useState(
     initialValues || {
       id: 0,
@@ -222,21 +191,39 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit }: any) {
 export default function Rags() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRag, setSelectedRag] = useState(null);
-  const [ragsData, setRagsData] = useState(rags);
+  const [ragsData, setRagsData] = useState([]);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    fetch('http://localhost:3001/rags')
+      .then((res) => res.json())
+      .then((data) => {
+        setRagsData(data?.data); 
+      })
+      .catch((err) => {
+        console.error('Error fetching data:', err);
+      });
+
+      fetch('http://localhost:3001/categories')
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data?.data); 
+      })
+      .catch((err) => {
+        console.error('Error fetching data:', err);
+      });
+  }, []);
 
   const handleCreate = (newRag) => {
-    const newId =
-      ragsData.length > 0 ? Math.max(...ragsData.map((r) => r.id)) + 1 : 1;
-    const createdRag = {
-      ...newRag,
-      id: newId,
-      category_id: Number(newRag.category_id)
-    };
-    setRagsData([...ragsData, createdRag]);
+    const formData = new FormData(newRag);
+    startTransition(() => {
+      const res = createRagAction(formData);
+      setRagsData([...ragsData, res.data]);
+    });
+    
     setOpenDialog(false);
   };
 
-  const handleUpdate = (updatedRag) => {
+  const handleUpdate = (updatedRag : any) => {
     setRagsData(
       ragsData.map((rag) => (rag.id === updatedRag.id ? updatedRag : rag))
     );
@@ -295,7 +282,10 @@ export default function Rags() {
 
         {ragsData.length > 0 ? (
           <>
-            <TabsContent value="all" className="p-10 bg-white rounded-lg shadow">
+            <TabsContent
+              value="all"
+              className="p-10 bg-white rounded-lg shadow"
+            >
               <RagsTable
                 rags={ragsData}
                 onEdit={handleEdit}
@@ -347,6 +337,7 @@ export default function Rags() {
               setOpenDialog={setOpenDialog}
               initialValues={selectedRag}
               onSubmit={selectedRag ? handleUpdate : handleCreate}
+              categories={categories}
             />
           </DialogPanel>
         </div>
@@ -355,7 +346,7 @@ export default function Rags() {
   );
 }
 
-function RagsTable({ rags, onEdit, onDelete }) {
+function RagsTable({ rags, onEdit, onDelete }: any) {
   return (
     <div className="w-full overflow-x-auto">
       <div className="flex justify-between border-b border-gray-300 pb-3 mb-4 font-semibold text-gray-700">

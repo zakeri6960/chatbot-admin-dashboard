@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { File, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 let initialModels = [
   {
@@ -28,9 +28,12 @@ let initialModels = [
 
 export default function ProductsPage() {
 
-  const [models, setModels] = useState(initialModels);
+  const [models, setModels] = useState([]);
   const [activeModel, setActiveModel] = useState(initialModels.find(m=> m.active)?.id || null);
 
+  useEffect(()=>{
+    fetch("http://localhost:3001/models").then((res)=> res.json()).then((data)=> setModels(data.data))
+  }, [])
   
   const handleChangeModel = (modelId)=>{
     const updatedModels = models.map((m) => ({
