@@ -3,10 +3,11 @@
 // import { deleteProductById } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
-export async function createRagAction (formData: FormData) {
-  const title = formData.get('title');
-  const rag = formData.get('rag');
-  const category_id = formData.get('category_id');
+export async function createRagAction (data) {
+  
+  const {title} = data;
+  const {rag} = data;
+  const {category_id} = data;
 
   try {
     const res = await fetch("http://localhost:3001/rags/create", {
@@ -25,7 +26,8 @@ export async function createRagAction (formData: FormData) {
       }
     }
 
-    const newRag = await res.json();
+    const resJson = await res.json();
+    const newRag = resJson.data;
     revalidatePath("/rags");
       return{
         status: 'success',

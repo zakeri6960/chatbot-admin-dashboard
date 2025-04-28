@@ -76,8 +76,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
 
   const handleChange = (e: any) => {
     const name = e.target.name;
-    const value =
-      name === 'category_id' ? Number(e.target.value) : e.target.value;
+    const value = e.target.value;
     setForm((prevForm: any) => ({ ...prevForm, [name]: value }));
   };
 
@@ -213,13 +212,10 @@ export default function Rags() {
       });
   }, []);
 
-  const handleCreate = (newRag) => {
-    const formData = new FormData(newRag);
-    startTransition(() => {
-      const res = createRagAction(formData);
-      setRagsData([...ragsData, res.data]);
-    });
-    
+  const handleCreate = async (newRag) => {
+    const res = await createRagAction(newRag);
+    console.log(res);
+    setRagsData([...ragsData, res.data]);
     setOpenDialog(false);
   };
 
