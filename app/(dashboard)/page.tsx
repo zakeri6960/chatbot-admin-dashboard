@@ -4,41 +4,32 @@ import { File, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
+import { ModelType } from '@/lib/types';
 
-let initialModels = [
-  {
-    id: 1,
-    model: "llama3.2:1b",
-    engine: "Ollama",
-    active: true
-  },
-  {
-    id: 2,
-    model: "gemma2:2b",
-    engine: "Ollama",
-    active: false
-  },
-  {
-    id: 3,
-    model: "deepseek:3b",
-    engine: "Ollama",
-    active: false
-  }
-]
 
 export default function ProductsPage() {
 
   const [models, setModels] = useState([]);
-  const [activeModel, setActiveModel] = useState(initialModels.find(m=> m.active)?.id || null);
+  const [activeModel, setActiveModel] = useState(models.find((m: ModelType)=> m.active)?.id || null);
 
   useEffect(()=>{
     fetch("http://localhost:3001/models").then((res)=> res.json()).then((data)=> setModels(data.data))
-  }, [])
+  }, []);
+
+  useEffect(()=>{
+    fetch("http://localhost:3001/models/active", {
+      method: "Post",
+      headers:{
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({modelId: activeModel})
+    });
+  }, [activeModel, models])
   
-  const handleChangeModel = (modelId)=>{
-    const updatedModels = models.map((m) => ({
+  const handleChangeModel = (modelId: string)=>{
+    const updatedModels = models.map((m: ModelType) => ({
       ...m,
-      active: m.id === modelId,
+      active: m.id == modelId,
     }));
 
     setModels(updatedModels);
@@ -64,21 +55,21 @@ export default function ProductsPage() {
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Model</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Engine</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Parameter Size</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">On/Off</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {models.map((model) => (
+              {models.map((model: ModelType) => (
                 <tr
                   key={model.id}
                   onClick={()=> handleChangeModel(model.id)}
                   className="hover:bg-blue-50 transition"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">{model.model}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{model.engine}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{model.parameter_size}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={clsx("inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold", model.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
                       {model.active ? "On" : "Off"}

@@ -42,3 +42,36 @@ export async function createRagAction (data) {
     }
   }
 }
+
+export async function deleteRagAction(id: string) {
+  try {
+    const res = await fetch("http://localhost:3001/rags/delete", {
+      method: "Delete",
+      headers:{
+        "Content-Type" : "application/json",
+      },
+      body: JSON.stringify({ragId: id})
+    });
+
+    if(!res){
+      return{
+        status: 'error',
+        message: 'Delete rag failed',
+        data: null
+      }
+    }else{
+      const data = await res.json();
+      return {
+        status: data.status,
+        message: data.message,
+        data: null
+      }
+    }
+  } catch (error) {
+    return{
+      status: 'error',
+      message: error.message,
+      data: null
+    }
+  }
+}

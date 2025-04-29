@@ -16,8 +16,8 @@ import {
   MenuItems
 } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/16/solid';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { createRagAction } from '../actions';
+import { createRagAction, deleteRagAction } from '../actions';
+import { CategoryType, RagType } from '@/lib/types';
 
 
 export function ToggleButton({ ragData, handleEdit, handleDelete }: any): any {
@@ -67,10 +67,10 @@ export function ToggleButton({ ragData, handleEdit, handleDelete }: any): any {
 export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: any) {
   const [form, setForm] = useState(
     initialValues || {
-      id: 0,
+      id: '',
       title: '',
       rag: '',
-      category_id: 0
+      category_id: ''
     }
   );
 
@@ -91,8 +91,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
       <div className="space-y-12">
         <div className="pb-12">
           <p className="mt-1 text-sm/6 text-gray-600">
-            This information will be displayed publicly so be careful what you
-            share.
+            
           </p>
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <div className="col-span-full">
@@ -132,7 +131,6 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
                 />
               </div>
               <p className="mt-3 text-sm/6 text-gray-600">
-                Write a few sentences about yourself.
               </p>
             </div>
 
@@ -152,7 +150,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
                   className="col-start-1 row-start-1 w-full appearance-none rounded-md border border-gray-300 bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm/6"
                 >
                   <option value={0}>Choose Category</option>
-                  {categories.map((category) => (
+                  {categories.map((category : CategoryType) => (
                     <option value={category.id} key={category.id}>
                       {category.title}
                     </option>
@@ -190,7 +188,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
 export default function Rags() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRag, setSelectedRag] = useState(null);
-  const [ragsData, setRagsData] = useState([]);
+  const [ragsData, setRagsData] = useState();
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     fetch('http://localhost:3001/rags')
@@ -212,7 +210,7 @@ export default function Rags() {
       });
   }, []);
 
-  const handleCreate = async (newRag) => {
+  const handleCreate = async (newRag : RagType) => {
     const res = await createRagAction(newRag);
     console.log(res);
     setRagsData([...ragsData, res.data]);
@@ -221,17 +219,22 @@ export default function Rags() {
 
   const handleUpdate = (updatedRag : any) => {
     setRagsData(
-      ragsData.map((rag) => (rag.id === updatedRag.id ? updatedRag : rag))
+      ragsData.map((rag : RagType) => (rag.id === updatedRag.id ? updatedRag : rag))
     );
     setSelectedRag(null);
     setOpenDialog(false);
   };
 
-  const handleDelete = (id) => {
-    setRagsData(ragsData.filter((rag) => rag.id !== id));
+  const handleDelete = async (id: string) => {
+    const res = await deleteRagAction(id);
+    if(res.status == 'success'){
+      setRagsData(ragsData.filter((rag: RagType) => rag.id !== id));
+    }else{
+      console.log(res.message)
+    }
   };
 
-  const handleEdit = (rag) => {
+  const handleEdit = (rag: RagType) => {
     setSelectedRag(rag);
     setOpenDialog(true);
   };
@@ -239,7 +242,7 @@ export default function Rags() {
   return (
     <>
       <Tabs
-        className="bg-inherit w-[100%] md:w-[90%] lg:w-[80%] mx-auto mt-8 px-4"
+        className=" w-[100%] md:w-[90%] lg:w-[80%] mx-auto mt-8 px-4 overflow-hidden pb-3"
         defaultValue="all"
       >
         <h2 className="text-2xl font-bold text-gray-800 pb-5">Rags</h2>
@@ -251,7 +254,7 @@ export default function Rags() {
             >
               All
             </TabsTrigger>
-            {categories.map((category) => (
+            {categories.map((category: CategoryType) => (
               <TabsTrigger
                 key={category.id}
                 value={category.title.toLowerCase()}
@@ -276,7 +279,7 @@ export default function Rags() {
           </Button>
         </div>
 
-        {ragsData.length > 0 ? (
+        {ragsData?.length > 0 ? (
           <>
             <TabsContent
               value="all"
@@ -289,7 +292,7 @@ export default function Rags() {
               />
             </TabsContent>
 
-            {categories.map((category) => (
+            {categories.map((category: CategoryType) => (
               <TabsContent
                 key={category.id}
                 value={category.title.toLowerCase()}
@@ -344,17 +347,17 @@ export default function Rags() {
 
 function RagsTable({ rags, onEdit, onDelete }: any) {
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-hidden">
       <div className="flex justify-between border-b border-gray-300 pb-3 mb-4 font-semibold text-gray-700">
         <p className="w-1/5 truncate">Title</p>
         <p className="w-4/5 truncate">Text</p>
         <div className="w-1/5 text-right">Actions</div>
       </div>
 
-      {rags.map((rag) => (
+      {rags.map((rag: RagType) => (
         <div
           key={rag.id}
-          className="flex justify-between items-center py-3 border-b border-gray-200 hover:bg-blue-50 transition rounded-md"
+          className="flex justify-between items-center p-3 border-b border-gray-200 hover:bg-blue-50 transition rounded-md"
         >
           <p className="w-1/5 truncate font-medium text-gray-800">
             {rag.title}
