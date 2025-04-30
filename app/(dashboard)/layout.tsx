@@ -27,11 +27,11 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Analytics } from '@vercel/analytics/react';
-import { UserPage } from './user';
 import { VercelLogo } from '@/components/icons';
 import Providers from './providers';
 import { NavItem } from './nav-item';
 import { SearchInput } from './search';
+import {ToastContainer, toast} from "react-toastify";
 
 export default function DashboardLayout({
   children
@@ -40,6 +40,7 @@ export default function DashboardLayout({
 }) {
   return (
     <Providers>
+      <ToastContainer />
       <main className="flex min-h-screen w-full flex-col bg-muted/40">
         <DesktopNav />
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">

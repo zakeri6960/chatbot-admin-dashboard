@@ -16,17 +16,16 @@ export default function ProductsPage() {
     fetch("http://localhost:3001/models").then((res)=> res.json()).then((data)=> setModels(data.data))
   }, []);
 
-  useEffect(()=>{
-    fetch("http://localhost:3001/models/active", {
+ 
+  
+  const handleChangeModel = async (modelId: string)=>{
+    await fetch("http://localhost:3001/models/active", {
       method: "Post",
       headers:{
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({modelId: activeModel})
+      body: JSON.stringify({modelId: modelId})
     });
-  }, [activeModel, models])
-  
-  const handleChangeModel = (modelId: string)=>{
     const updatedModels = models.map((m: ModelType) => ({
       ...m,
       active: m.id == modelId,

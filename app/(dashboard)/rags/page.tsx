@@ -16,8 +16,9 @@ import {
   MenuItems
 } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/16/solid';
-import { createRagAction, deleteRagAction } from '../actions';
+import { createRagAction, deleteRagAction, updateRagAction } from '../actions';
 import { CategoryType, RagType } from '@/lib/types';
+import { toast } from 'react-toastify';
 
 
 export function ToggleButton({ ragData, handleEdit, handleDelete }: any): any {
@@ -83,7 +84,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
   const handleSubmit = (e: any) => {
     e.preventDefault();
     onSubmit(form);
-    setOpenDialog(false);
+    // setOpenDialog(false);
   };
 
   return (
@@ -94,6 +95,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
             
           </p>
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <input type="hidden" name="id" value={form.id} />
             <div className="col-span-full">
               <label
                 htmlFor="title"
@@ -149,7 +151,7 @@ export function RagForm({ setOpenDialog, initialValues, onSubmit, categories }: 
                   onChange={handleChange}
                   className="col-start-1 row-start-1 w-full appearance-none rounded-md border border-gray-300 bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm/6"
                 >
-                  <option value={0}>Choose Category</option>
+                  <option value={''}>Choose Category</option>
                   {categories.map((category : CategoryType) => (
                     <option value={category.id} key={category.id}>
                       {category.title}
@@ -212,17 +214,40 @@ export default function Rags() {
 
   const handleCreate = async (newRag : RagType) => {
     const res = await createRagAction(newRag);
-    console.log(res);
-    setRagsData([...ragsData, res.data]);
-    setOpenDialog(false);
+    if(res.status == 'error'){
+      toast.error(res.message);
+    }else if(res.status == 'success'){
+      toast.success(res.message);
+      await fetch('http://localhost:3001/rags')
+      .then((res) => res.json())
+      .then((data) => {
+        setRagsData(data?.data); 
+      })
+      .catch((err) => {
+        console.error('Error fetching data:', err);
+      });
+      setOpenDialog(false);
+    }
   };
 
-  const handleUpdate = (updatedRag : any) => {
-    setRagsData(
-      ragsData.map((rag : RagType) => (rag.id === updatedRag.id ? updatedRag : rag))
-    );
-    setSelectedRag(null);
-    setOpenDialog(false);
+  const handleUpdate = async (updatedRag : RagType) => {
+    const res = await updateRagAction(updatedRag);
+    if(res.status == 'error'){
+      toast.error(res.message);
+    }else if(res.status == 'success'){
+      toast.success(res.message);
+      await fetch('http://localhost:3001/rags')
+      .then((res) => res.json())
+      .then((data) => {
+        setRagsData(data?.data); 
+      })
+      .catch((err) => {
+        console.error('Error fetching data:', err);
+      });
+      setSelectedRag(null);
+      setOpenDialog(false);
+    }
+    
   };
 
   const handleDelete = async (id: string) => {
@@ -235,7 +260,7 @@ export default function Rags() {
   };
 
   const handleEdit = (rag: RagType) => {
-    setSelectedRag(rag);
+    setSelectedRag({id: String(rag.id), title: rag.title, rag: rag.rag, category_id: String(rag.category_id)});
     setOpenDialog(true);
   };
 
@@ -300,7 +325,7 @@ export default function Rags() {
               >
                 <RagsTable
                   rags={ragsData.filter(
-                    (rag) => rag.category_id === category.id
+                    (rag: RagType) => rag.category_id === category.id
                   )}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
